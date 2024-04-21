@@ -1,0 +1,31 @@
+{
+  "name": "30c",
+  "version": "1.0.0",
+  "description": "30c is a comprehensive eCommerce platform designed for the pharmaceutical sector. Users can create accounts, log in, browse medicines, rate products, leave comments, add items to their cart, and complete purchases via checkout and payment. The platform also features an admin interface for managing medicine details and orders.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "nodemon": "nodemon backend/server.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run nodemon\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thearunsinha/30c.git"
+  },
+  "author": "Arun Sinha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thearunsinha/30c/issues"
+  },
+  "homepage": "https://github.com/thearunsinha/30c#readme",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.5"
+  }
+}
