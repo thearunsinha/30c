@@ -1,14 +1,29 @@
 a {
   text-decoration: none;
+  color: #212529;
 }
 
-.add-to-cart:hover {
+a:hover {
+  text-decoration: underline;
+}
+
+.empty-cart-btn {
+  background: #a0a8b1;
+  border: #a0a8b1;
+}
+
+.empty-cart-btn:hover {
+  background: #54585e;
+  border: #54585e;
+}
+
+.btn-block:hover {
   background: #a0a8b1 !important;
   border: #a0a8b1 !important;
   transition: 0.7s;
 }
 
-.add-to-cart {
+.btn-block {
   background: #343a40 !important;
   border: #343a40 !important;
   transition: 0.7s;
