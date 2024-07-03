@@ -1,14 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import {
-  Row,
-  Col,
-  ListGroup,
-  Image,
-  Form,
-  Button,
-  Card,
-} from "react-bootstrap";
+import { Row, Col, ListGroup, Image, Button, Card } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
@@ -18,7 +10,10 @@ import {
   useGetOrderDetailsQuery,
   useGetPaypPalClientIdQuery,
   usePayOrderMutation,
+  useDeliverOrderMutation,
 } from "../slices/orderApiSlice";
+import useRazorpay from "react-razorpay";
+import { RAZORPAY_URL } from "../constant";
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
@@ -30,6 +25,9 @@ const OrderScreen = () => {
   } = useGetOrderDetailsQuery(orderId);
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  const [deliverOrder, { isLoading: loadingDeliver }] =
+    useDeliverOrderMutation();
 
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
@@ -73,11 +71,11 @@ const OrderScreen = () => {
     });
   }
 
-  async function onApproveTest() {
-    await payOrder({ orderId, details: { payer: {} } });
-    refetch();
-    toast.success("Payment successful");
-  }
+  // async function onApproveTest() {
+  //   await payOrder({ orderId, details: { payer: {} } });
+  //   refetch();
+  //   toast.success("Payment successful");
+  // }
   function onError(err) {
     toast.error(err.message);
   }
@@ -96,6 +94,77 @@ const OrderScreen = () => {
         return orderId;
       });
   }
+
+  //Razorpay payment
+  const [Razorpay] = useRazorpay();
+  const paymentHandlerRP = async (event) => {
+    console.log("Called");
+    const response = await fetch(RAZORPAY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: parseInt(order.totalPrice * 100),
+        currency: "INR",
+        receipt: orderId,
+      }),
+    });
+    const data = await response.json();
+    console.log(data);
+    var options = {
+      // key_id: "rzp_test_Oviqtlxyv8wHzp",
+      key_id: "",
+      amount: order.totalPrice * 100,
+      currency: "INR",
+      name: "30c",
+      description: "Test Transaction",
+      image: "https://example.com/your_logo",
+      order_id: data.id,
+      handler: async function (response) {
+        const resBody = response.razorpay_payment_id;
+
+        console.log(resBody);
+        try {
+          await payOrder({ orderId, details: { payer: {} } });
+          refetch();
+          toast.success("Payment successful");
+        } catch (err) {
+          toast.error(err?.data?.message || err.message);
+        }
+      },
+      prefill: {
+        name: userInfo.name,
+        email: userInfo.email,
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+    const rzp1 = new Razorpay(options);
+    rzp1.on("payment.failed", function (resopnse) {
+      alert(response.error.code);
+      alert(response.error.description);
+      alert(response.error.source);
+      alert(response.error.step);
+      alert(response.error.reason);
+      alert(response.error.metadata.order_id);
+      alert(response.error.metadata.payment_id);
+    });
+    rzp1.open();
+    event.preventDefault();
+  };
+
+  //Order deliver
+  const deliverOrderHandler = async () => {
+    try {
+      await deliverOrder(orderId);
+      refetch();
+      toast.success("Order delivered successfully");
+    } catch (err) {
+      toast.error(err?.data?.message || err.message);
+    }
+  };
 
   return isLoading ? (
     <Loader />
@@ -198,6 +267,12 @@ const OrderScreen = () => {
                       >
                         Test Pay Order
                       </Button> */}
+                      <Button
+                        onClick={paymentHandlerRP}
+                        style={{ marginBottom: "10px" }}
+                      >
+                        Pay with RazorPay
+                      </Button>
                       <div>
                         <PayPalButtons
                           createOrder={createOrder}
@@ -210,6 +285,21 @@ const OrderScreen = () => {
                 </ListGroup.Item>
               )}
               {/* MARK AS DELIVERED PLACEHOLDER */}
+              {loadingDeliver && <Loader />}
+              {userInfo &&
+                userInfo.isAdmin &&
+                order.isPaid &&
+                !order.isDelivered && (
+                  <ListGroup.Item>
+                    <Button
+                      type="button"
+                      className="btn btn-block"
+                      onClick={deliverOrderHandler}
+                    >
+                      Mark As Delivered
+                    </Button>
+                  </ListGroup.Item>
+                )}
             </ListGroup>
           </Card>
         </Col>

@@ -55,3 +55,24 @@ a:hover {
   white-space: nowrap;
   color: #343a40;
 }
+
+.carousel-caption {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.bg-primary,
+.btn,
+.active > .page-link,
+.dropdown-item.active {
+  background-color: #232b2b !important;
+  border-color: #232b2b !important;
+}
+.btn,
+.btn:hover {
+  color: white;
+}
